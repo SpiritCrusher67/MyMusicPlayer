@@ -1,0 +1,368 @@
+﻿<Window x:Class="Player.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Player"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d" Height="500" Width="300" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" WindowStyle="None">
+
+    <Window.DataContext>
+        <local:MainModelView/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <ResourceDictionary>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisible"/>
+
+            <Style x:Key="ScrollThumbs" TargetType="{x:Type Thumb}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Thumb}">
+                            <Grid x:Name="Grid">
+                                <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto" Fill="Transparent" />
+                                <Border x:Name="Rectangle1" CornerRadius="7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto"  Background="{TemplateBinding Background}" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Tag" Value="Horizontal">
+                                    <Setter TargetName="Rectangle1" Property="Width" Value="Auto" />
+                                    <Setter TargetName="Rectangle1" Property="Height" Value="7" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+            <!--VolumeButton-->
+            <Style x:Key="VolumeStyle" TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignFloatingActionMiniAccentButton}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding VolumeState}" Value="{x:Static local:VolumeState.Muted}">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="VolumeMute" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding VolumeState}" Value="{x:Static local:VolumeState.Low}">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="VolumeLow" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding VolumeState}" Value="{x:Static local:VolumeState.Medium}">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="VolumeMedium" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding VolumeState}" Value="{x:Static local:VolumeState.High}">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="VolumeHigh" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <!--PlayStopButton-->
+            <Style x:Key="PlayStopStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignFloatingActionMiniAccentButton}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsPlaying}" Value="False">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="Play" Width="30" Height="30">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="Pause" Width="30" Height="30">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <!--ScrollBars-->
+            <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}">
+                <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
+                <Setter Property="Foreground" Value="LightGray" />
+                <Setter Property="Background" Value="DarkGray" />
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid x:Name="GridRoot" Width="15" Background="{x:Null}">
+                                <Track x:Name="PART_Track" Grid.Row="0" IsDirectionReversed="true" Focusable="false">
+                                    <Track.Thumb>
+                                        <Thumb x:Name="Thumb" Background="{TemplateBinding Foreground}" Style="{DynamicResource ScrollThumbs}" />
+                                    </Track.Thumb>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton x:Name="PageUp" Command="ScrollBar.PageDownCommand" Opacity="0" Focusable="false" />
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton x:Name="PageDown" Command="ScrollBar.PageUpCommand" Opacity="0" Focusable="false" />
+                                    </Track.DecreaseRepeatButton>
+                                </Track>
+                            </Grid>
+
+                            <ControlTemplate.Triggers>
+                                <Trigger SourceName="Thumb" Property="IsMouseOver" Value="true">
+                                    <Setter Value="{DynamicResource ButtonSelectBrush}" TargetName="Thumb" Property="Background" />
+                                </Trigger>
+                                <Trigger SourceName="Thumb" Property="IsDragging" Value="true">
+                                    <Setter Value="{DynamicResource DarkBrush}" TargetName="Thumb" Property="Background" />
+                                </Trigger>
+
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter TargetName="Thumb" Property="Visibility" Value="Collapsed" />
+                                </Trigger>
+                                <Trigger Property="Orientation" Value="Horizontal">
+                                    <Setter TargetName="GridRoot" Property="LayoutTransform">
+                                        <Setter.Value>
+                                            <RotateTransform Angle="-90" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="PART_Track" Property="LayoutTransform">
+                                        <Setter.Value>
+                                            <RotateTransform Angle="-90" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Width" Value="Auto" />
+                                    <Setter Property="Height" Value="12" />
+                                    <Setter TargetName="Thumb" Property="Tag" Value="Horizontal" />
+                                    <Setter TargetName="PageDown" Property="Command" Value="ScrollBar.PageLeftCommand" />
+                                    <Setter TargetName="PageUp" Property="Command" Value="ScrollBar.PageRightCommand" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Background="Black">
+        <Grid Margin="5" Background="#44444444" Height="300" VerticalAlignment="Top">
+            <Grid VerticalAlignment="Top" Margin="10">
+                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top">
+                    <materialDesign:PackIcon Kind="Gear" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+                <StackPanel>
+                    <TextBlock Text="{Binding CurrentFile.Artist}" HorizontalAlignment="Center" Foreground="LightSteelBlue"/>
+                    <TextBlock DataContext="{Binding CurrentFile}" HorizontalAlignment="Center" Foreground="LightSteelBlue">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} - {1} ">
+                                <Binding Path="Album" />
+                                <Binding Path="Title" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" Click="ExitButton_Click">
+                    <materialDesign:PackIcon Kind="Power" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+            </Grid>
+            <Ellipse Width="150" Height="150" StrokeThickness="1">
+                <Ellipse.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="0.71"/>
+                        <GradientStop Color="#FF885219"/>
+                        <GradientStop Color="#FEB14F18" Offset="0.60"/>
+                    </LinearGradientBrush>
+                </Ellipse.Stroke>
+
+
+            </Ellipse>
+            <Ellipse Width="145" Height="145">
+                <Ellipse.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF0C0604" Offset="1"/>
+                        <GradientStop Color="#FF210900" Offset="0.047"/>
+                        <GradientStop Color="#FF1D0800" Offset="0.602"/>
+                    </LinearGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="135" Height="135">
+                <Ellipse.Fill>
+                    <ImageBrush ImageSource="{Binding CurrentFile.Picture}" />
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="135" Height="135" Fill="#7F000000"/>
+            <Slider  HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,45,25"  Foreground="#FFD6511E" Orientation="Vertical" Minimum="0" Maximum="100" Height="100" Style="{StaticResource MaterialDesignDiscreteSlider}" Width="50" Visibility="{Binding ElementName=ShowVolume, Path=IsChecked,Converter={StaticResource BoolToVisible}}" Value="{Binding Volume, Mode=TwoWay}"/>
+            <Grid VerticalAlignment="Bottom" Margin="5">
+                <Button HorizontalAlignment="Left"  Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding AddFilesCommand}">
+                    <materialDesign:PackIcon Kind="Plus" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="45 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="RotateRight" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="80 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding PreviousFileCommand}">
+                    <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+
+                <Button x:Name="StopPlay" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource PlayStopStyle}" BorderBrush="#70702222" Background="#B2222222" Command="{Binding PlayStopCommand}">
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="20" Color="#FFD67619" Direction="-0" RenderingBias="Quality" ShadowDepth="1" />
+                    </Button.Effect>
+
+                </Button>
+
+                <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="80 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding NextFileCommand}">
+                    <materialDesign:PackIcon Kind="ChevronRight" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+
+                <ToggleButton IsChecked="{Binding IsMuted,Mode=TwoWay}" HorizontalAlignment="Right" Width="20" Height="20" Margin="55 5" Style="{StaticResource VolumeStyle}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center"/>
+
+                <ToggleButton  x:Name="ShowVolume" HorizontalAlignment="Right" Margin="40 0" Width="15" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Cursor="Hand">
+                    <materialDesign:PackIcon Kind="ChevronDoubleUp" Width="15" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <materialDesign:PackIcon.Foreground>
+                                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                    <GradientStop Color="#FFD69016"/>
+                                    <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                    <GradientStop Color="#FF98330D" Offset="0.807"/>
+                                </LinearGradientBrush>
+                            </materialDesign:PackIcon.Foreground>
+                        </materialDesign:PackIcon>
+                </ToggleButton>
+
+
+                <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding MixFilesCommand}">
+                    <materialDesign:PackIcon Kind="ShuffleVariant" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+            </Grid>
+        </Grid>
+
+        <ListView VerticalAlignment="Bottom" Margin="5" Height="185" Foreground="LightSteelBlue" ItemsSource="{Binding Files}" SelectedItem="{Binding CurrentFile,Mode=TwoWay}">
+            <ListView.ItemTemplate>
+                <ItemContainerTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Path=Track}" VerticalAlignment="Center"/>
+                        <Ellipse Margin="10 0" Width="30" Height="30" VerticalAlignment="Center">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="{Binding Picture}"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Width="100" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Year}" VerticalAlignment="Center" Margin="10 0"/>
+                        <TextBlock  VerticalAlignment="Center" Margin="0">
+                            <TextBlock.Text >
+                                <Binding StringFormat="mm':'ss" Path="Duration"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </ItemContainerTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
+    </Grid>
+</Window>
