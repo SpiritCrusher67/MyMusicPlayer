@@ -14,6 +14,9 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.Win32;
+using System.Runtime.Remoting;
+using System.Timers;
+using System.Windows;
 
 namespace Player
 {
@@ -27,6 +30,46 @@ namespace Player
         private int _volume;
         private bool _isMuted;
         private VolumeState _volumeState;
+        private bool _isStopped;
+        private AudioFileReader _currentAudioFile;
+        private TimeSpan _currentTime;
+        private Timer timer;
+        private long _currentPosition;
+
+        public AudioFileReader CurrentAudioFile { get => _currentAudioFile; set { _currentAudioFile = value; RaisePropertyChanged(); } }
+
+        public long CurrentPosition
+        {
+            get => _currentPosition;
+            set
+            {
+                if (_currentPosition != default)
+                {
+                    _currentPosition = value;
+                    if (CurrentAudioFile != default)
+                    {
+                        CurrentAudioFile.Position = value;
+                    }
+                }
+            }
+        }
+
+        public TimeSpan CurrentTime
+        {
+            get => _currentTime;
+            set
+            {
+                if (_currentTime != default)
+                {
+                    _currentTime = value;
+                    if (CurrentAudioFile != default)
+                    {
+                        CurrentAudioFile.CurrentTime = value;
+                    }
+                }
+
+            }
+        }
 
         public int Volume { get => _volume; set { _volume = value; RaisePropertyChanged(); } }
 
@@ -34,7 +77,10 @@ namespace Player
 
         public bool IsPlaying { get => _isPlaying; set { _isPlaying = value; RaisePropertyChanged(); } }
 
+        public bool IsStopped { get => _isStopped; set { _isStopped = value; RaisePropertyChanged(); } }
+
         public bool IsMuted { get => _isMuted; set { _isMuted = value; RaisePropertyChanged(); } }
+
 
         public AudioFile CurrentFile
         {
@@ -52,6 +98,25 @@ namespace Player
         {
             Files = new ObservableCollection<AudioFile>();
             waveOut = new WaveOutEvent();
+            IsStopped = true;
+
+            timer = new Timer();
+
+            timer.Elapsed += Timer_Elapsed;
+            timer.Start();
+
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (CurrentAudioFile != default)
+            {
+                _currentTime = CurrentAudioFile.CurrentTime;
+                RaisePropertyChanged("CurrentTime");
+
+                _currentPosition = CurrentAudioFile.Position;
+                RaisePropertyChanged("CurrentPosition");
+            }
         }
 
         public override void RaisePropertyChanged([CallerMemberName] string propertyName = null)
@@ -64,9 +129,11 @@ namespace Player
                     if (CurrentFile != default)
                     {
                         waveOut.Stop();
-                        waveOut.Init(new AudioFileReader(CurrentFile.Patch));
+                        waveOut.Init(CurrentAudioFile = new AudioFileReader(CurrentFile.Patch));
                         waveOut.Play();
                         IsPlaying = true;
+                        IsStopped = false;
+                        CurrentTime = CurrentAudioFile.CurrentTime;
                     }
                     break;
                 case "Volume":
@@ -99,7 +166,7 @@ namespace Player
             });
         }
 
-        public RelayCommand PlayStopCommand
+        public RelayCommand PausePlayCommand
         {
             get => new RelayCommand(() =>
             {
@@ -108,21 +175,52 @@ namespace Player
                     switch (waveOut.PlaybackState)
                     {
                         case PlaybackState.Stopped:
-                            waveOut.Init(new AudioFileReader(CurrentFile.Patch));
+                            waveOut.Init(CurrentAudioFile = new AudioFileReader(CurrentFile.Patch));
                             waveOut.Play();
                             IsPlaying = true;
+                            IsStopped = false;
                             break;
                         case PlaybackState.Playing:
                             waveOut.Pause();
                             IsPlaying = false;
+                            IsStopped = false;
                             break;
                         case PlaybackState.Paused:
                             waveOut.Play();
                             IsPlaying = true;
+                            IsStopped = false;
                             break;
                         default:
                             break;
                     }
+                }
+
+            });
+        }
+
+        public RelayCommand StopRepeatCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                switch (waveOut.PlaybackState)
+                {
+                    case PlaybackState.Stopped:
+                        CurrentFile = Files.FirstOrDefault();
+                        waveOut.Play();
+                        IsPlaying = true;
+                        IsStopped = false;
+                        break;
+                    case PlaybackState.Playing:
+                        waveOut.Stop();
+                        IsPlaying = false;
+                        IsStopped = true;
+                        break;
+                    case PlaybackState.Paused:
+                        waveOut.Stop();
+                        IsStopped = true;
+                        break;
+                    default:
+                        break;
                 }
 
             });
@@ -220,4 +318,5 @@ namespace Player
         }
 
     }
+
 }

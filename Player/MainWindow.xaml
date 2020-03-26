@@ -34,6 +34,41 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style x:Key="StopRepeatStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignFloatingActionMiniAccentButton}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsStopped}" Value="true">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="RotateRight" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsStopped}" Value="false">
+                        <Setter Property="Content" >
+                            <Setter.Value>
+                                <materialDesign:PackIcon Kind="Stop" Width="20" Height="20">
+                                    <materialDesign:PackIcon.Foreground>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                            <GradientStop Color="#FFD69016"/>
+                                            <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                            <GradientStop Color="#FF9B330D" Offset="0.807"/>
+                                        </LinearGradientBrush>
+                                    </materialDesign:PackIcon.Foreground>
+                                </materialDesign:PackIcon>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
             
             <!--VolumeButton-->
             <Style x:Key="VolumeStyle" TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignFloatingActionMiniAccentButton}">
@@ -258,6 +293,19 @@
                 </Ellipse.Fill>
             </Ellipse>
             <Ellipse Width="135" Height="135" Fill="#7F000000"/>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Height="30" Margin="0 45">
+                <TextBlock VerticalAlignment="Center" Margin="5" Width="30" Foreground="LightSteelBlue">
+                    <TextBlock.Text >
+                        <Binding StringFormat="mm':'ss" Path="CurrentTime"/>
+                    </TextBlock.Text>
+                </TextBlock>
+                <Slider Orientation="Horizontal" Minimum="0" Maximum="{Binding CurrentAudioFile.Length}" Value="{Binding  CurrentPosition,Mode=TwoWay}" VerticalAlignment="Center" Foreground="#FFD6511E" HorizontalAlignment="Center" Width="210"/>
+                <TextBlock  VerticalAlignment="Center" Margin="5" Width="30" Foreground="LightSteelBlue">
+                    <TextBlock.Text >
+                        <Binding StringFormat="mm':'ss" Path="CurrentAudioFile.TotalTime"/>
+                    </TextBlock.Text>
+                </TextBlock>
+            </StackPanel>
             <Slider  HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,45,25"  Foreground="#FFD6511E" Orientation="Vertical" Minimum="0" Maximum="100" Height="100" Style="{StaticResource MaterialDesignDiscreteSlider}" Width="50" Visibility="{Binding ElementName=ShowVolume, Path=IsChecked,Converter={StaticResource BoolToVisible}}" Value="{Binding Volume, Mode=TwoWay}"/>
             <Grid VerticalAlignment="Bottom" Margin="5">
                 <Button HorizontalAlignment="Left"  Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding AddFilesCommand}">
@@ -271,16 +319,7 @@
                         </materialDesign:PackIcon.Foreground>
                     </materialDesign:PackIcon>
                 </Button>
-                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="45 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="RotateRight" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon.Foreground>
-                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
-                                <GradientStop Color="#FFD69016"/>
-                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
-                                <GradientStop Color="#FF98330D" Offset="0.807"/>
-                            </LinearGradientBrush>
-                        </materialDesign:PackIcon.Foreground>
-                    </materialDesign:PackIcon>
+                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="45 5" Style="{StaticResource StopRepeatStyle}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding StopRepeatCommand}">
                 </Button>
                 <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="80 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding PreviousFileCommand}">
                     <materialDesign:PackIcon Kind="ChevronLeft" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -294,7 +333,7 @@
                     </materialDesign:PackIcon>
                 </Button>
 
-                <Button x:Name="StopPlay" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource PlayStopStyle}" BorderBrush="#70702222" Background="#B2222222" Command="{Binding PlayStopCommand}">
+                <Button x:Name="StopPlay" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource PlayStopStyle}" BorderBrush="#70702222" Background="#B2222222" Command="{Binding PausePlayCommand}">
                     <Button.Effect>
                         <DropShadowEffect BlurRadius="20" Color="#FFD67619" Direction="-0" RenderingBias="Quality" ShadowDepth="1" />
                     </Button.Effect>
