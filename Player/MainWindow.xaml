@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:Player"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d" Height="500" Width="300" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" WindowStyle="None">
-
     <Window.DataContext>
         <local:MainModelView/>
     </Window.DataContext>
@@ -232,8 +231,8 @@
 
     <Grid Background="Black">
         <Grid Margin="5" Background="#44444444" Height="300" VerticalAlignment="Top">
-            <Grid VerticalAlignment="Top" Margin="10">
-                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top">
+            <Grid VerticalAlignment="Top" Margin="0">
+                <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top">
                     <materialDesign:PackIcon Kind="Gear" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <materialDesign:PackIcon.Foreground>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
@@ -245,8 +244,8 @@
                     </materialDesign:PackIcon>
                 </Button>
                 <StackPanel>
-                    <TextBlock Text="{Binding CurrentFile.Artist}" HorizontalAlignment="Center" Foreground="LightSteelBlue"/>
-                    <TextBlock DataContext="{Binding CurrentFile}" HorizontalAlignment="Center" Foreground="LightSteelBlue">
+                    <TextBlock Text="{Binding CurrentFile.Artist}" MaxWidth="170" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"  Foreground="LightSteelBlue"/>
+                    <TextBlock DataContext="{Binding CurrentFile}" MaxWidth="170" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Foreground="LightSteelBlue">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0} - {1} ">
                                 <Binding Path="Album" />
@@ -255,7 +254,7 @@
                         </TextBlock.Text>
                     </TextBlock>
                 </StackPanel>
-                <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="10 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" Click="ExitButton_Click">
+                <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" Click="ExitButton_Click">
                     <materialDesign:PackIcon Kind="Power" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <materialDesign:PackIcon.Foreground>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
@@ -296,13 +295,13 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Height="30" Margin="0 45">
                 <TextBlock VerticalAlignment="Center" Margin="5" Width="30" Foreground="LightSteelBlue">
                     <TextBlock.Text >
-                        <Binding StringFormat="mm':'ss" Path="CurrentTime"/>
+                        <Binding StringFormat="mm':'ss" Path="CurrentTime" Mode="OneWay"/>
                     </TextBlock.Text>
                 </TextBlock>
-                <Slider Orientation="Horizontal" Minimum="0" Maximum="{Binding CurrentAudioFile.Length}" Value="{Binding  CurrentPosition,Mode=TwoWay}" VerticalAlignment="Center" Foreground="#FFD6511E" HorizontalAlignment="Center" Width="210"/>
+                <Slider Orientation="Horizontal" Minimum="0" Maximum="{Binding FileReader.Length}" Value="{Binding  CurrentPosition,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Foreground="#FFD6511E" HorizontalAlignment="Center" Width="210"/>
                 <TextBlock  VerticalAlignment="Center" Margin="5" Width="30" Foreground="LightSteelBlue">
                     <TextBlock.Text >
-                        <Binding StringFormat="mm':'ss" Path="CurrentAudioFile.TotalTime"/>
+                        <Binding StringFormat="mm':'ss" Path="FileReader.TotalTime"/>
                     </TextBlock.Text>
                 </TextBlock>
             </StackPanel>
@@ -319,6 +318,7 @@
                         </materialDesign:PackIcon.Foreground>
                     </materialDesign:PackIcon>
                 </Button>
+                
                 <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="45 5" Style="{StaticResource StopRepeatStyle}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding StopRepeatCommand}">
                 </Button>
                 <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="80 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Command="{Binding PreviousFileCommand}">
@@ -354,8 +354,8 @@
 
                 <ToggleButton IsChecked="{Binding IsMuted,Mode=TwoWay}" HorizontalAlignment="Right" Width="20" Height="20" Margin="55 5" Style="{StaticResource VolumeStyle}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center"/>
 
-                <ToggleButton  x:Name="ShowVolume" HorizontalAlignment="Right" Margin="40 0" Width="15" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Cursor="Hand">
-                    <materialDesign:PackIcon Kind="ChevronDoubleUp" Width="15" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ToggleButton  x:Name="ShowVolume" HorizontalAlignment="Right" Margin="43 0" Width="10" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Center" Cursor="Hand">
+                    <materialDesign:PackIcon Kind="Triangle" Width="10" Height="10" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <materialDesign:PackIcon.Foreground>
                                 <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                                     <GradientStop Color="#FFD69016"/>
@@ -385,14 +385,14 @@
             <ListView.ItemTemplate>
                 <ItemContainerTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Path=Track}" VerticalAlignment="Center"/>
-                        <Ellipse Margin="10 0" Width="30" Height="30" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Path=Track}" Width="14" VerticalAlignment="Center"/>
+                        <Ellipse Margin="5 0" Width="30" Height="30" VerticalAlignment="Center">
                             <Ellipse.Fill>
                                 <ImageBrush ImageSource="{Binding Picture}"/>
                             </Ellipse.Fill>
                         </Ellipse>
                         <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Width="100" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding Year}" VerticalAlignment="Center" Margin="10 0"/>
+                        <TextBlock Text="{Binding Year}" VerticalAlignment="Center" Margin="5 0"/>
                         <TextBlock  VerticalAlignment="Center" Margin="0">
                             <TextBlock.Text >
                                 <Binding StringFormat="mm':'ss" Path="Duration"/>

@@ -22,35 +22,75 @@ namespace Player
 {
     class MainModelView : ViewModelBase, INotifyPropertyChanged
     {
+        public MainModelView()
+        {
+            Files = new ObservableCollection<AudioFile>();
+            waveOut = new WaveOutEvent();
+
+            timer = new Timer();
+            timer.Interval = 300;
+            timer.Elapsed += Timer_Elapsed;
+            timer.Start();
+        }
+
         private AudioFile _currentFile;
 
         private WaveOutEvent waveOut;
         private int oldVolume;
-        private bool _isPlaying;
         private int _volume;
         private bool _isMuted;
         private VolumeState _volumeState;
-        private bool _isStopped;
-        private AudioFileReader _currentAudioFile;
         private TimeSpan _currentTime;
         private Timer timer;
         private long _currentPosition;
+        private AudioFileReader _fileReader;
 
-        public AudioFileReader CurrentAudioFile { get => _currentAudioFile; set { _currentAudioFile = value; RaisePropertyChanged(); } }
+        public AudioFileReader FileReader { get => _fileReader; set { _fileReader = value; RaisePropertyChanged(); } }
+
+        //Выбранный файл
+        public AudioFile CurrentFile
+        {
+            get => _currentFile;
+            set
+            {
+                if (_currentFile != value)
+                {
+                    _currentFile = value;
+
+                    if (CurrentFile != default)
+                    {
+                        waveOut.Stop();
+                        FileReader = new AudioFileReader(CurrentFile.Patch);
+                        waveOut.Init(FileReader);
+                        waveOut.Play();
+                        RaisePropertyChanged("IsPlaying");
+                        RaisePropertyChanged("IsStopped");
+                        if (FileReader != null)
+                        {
+                            CurrentTime = FileReader.CurrentTime;
+                        }
+                     
+                    }
+                    RaisePropertyChanged();
+
+                }
+            }
+        }
 
         public long CurrentPosition
         {
             get => _currentPosition;
             set
             {
-                if (_currentPosition != default)
+                if (FileReader != null)
                 {
                     _currentPosition = value;
-                    if (CurrentAudioFile != default)
+                    if (CurrentFile != default)
                     {
-                        CurrentAudioFile.Position = value;
+                        FileReader.Position = value;
                     }
                 }
+                
             }
         }
 
@@ -59,99 +99,102 @@ namespace Player
             get => _currentTime;
             set
             {
-                if (_currentTime != default)
+                if (FileReader != default)
                 {
                     _currentTime = value;
-                    if (CurrentAudioFile != default)
+                    if (CurrentFile != default)
                     {
-                        CurrentAudioFile.CurrentTime = value;
+                        FileReader.CurrentTime = value;
                     }
                 }
-
+                
             }
         }
 
-        public int Volume { get => _volume; set { _volume = value; RaisePropertyChanged(); } }
-
-        public VolumeState VolumeState { get => _volumeState; set { _volumeState = value; RaisePropertyChanged(); } }
-
-        public bool IsPlaying { get => _isPlaying; set { _isPlaying = value; RaisePropertyChanged(); } }
-
-        public bool IsStopped { get => _isStopped; set { _isStopped = value; RaisePropertyChanged(); } }
-
-        public bool IsMuted { get => _isMuted; set { _isMuted = value; RaisePropertyChanged(); } }
-
-
-        public AudioFile CurrentFile
+        public int Volume
         {
-            get => _currentFile;
+            get => _volume;
             set
             {
-                _currentFile = value;
+                if (_volume != value)
+                {
+                    _volume = value;
+                    waveOut.Volume = Volume / 100f;
+                    VolumeState = (Volume == 0) ? VolumeState.Muted : (Volume <= 40) ? VolumeState.Low : (Volume <= 70) ? VolumeState.Medium : VolumeState.High;
+                }
                 RaisePropertyChanged();
             }
         }
 
-        public ObservableCollection<AudioFile> Files { get; set; }
-
-        public MainModelView()
+        public bool IsMuted
         {
-            Files = new ObservableCollection<AudioFile>();
-            waveOut = new WaveOutEvent();
-            IsStopped = true;
-
-            timer = new Timer();
-
-            timer.Elapsed += Timer_Elapsed;
-            timer.Start();
-
-        }
-
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            if (CurrentAudioFile != default)
+            get => _isMuted;
+            set
             {
-                _currentTime = CurrentAudioFile.CurrentTime;
-                RaisePropertyChanged("CurrentTime");
-
-                _currentPosition = CurrentAudioFile.Position;
-                RaisePropertyChanged("CurrentPosition");
-            }
-        }
-
-        public override void RaisePropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            base.RaisePropertyChanged(propertyName);
-
-            switch (propertyName)
-            {
-                case "CurrentFile":
-                    if (CurrentFile != default)
-                    {
-                        waveOut.Stop();
-                        waveOut.Init(CurrentAudioFile = new AudioFileReader(CurrentFile.Patch));
-                        waveOut.Play();
-                        IsPlaying = true;
-                        IsStopped = false;
-                        CurrentTime = CurrentAudioFile.CurrentTime;
-                    }
-                    break;
-                case "Volume":
-                    waveOut.Volume = Volume / 100f;
-                    VolumeState = (Volume == 0) ? VolumeState.Muted : (Volume <= 40) ? VolumeState.Low : (Volume <= 70) ? VolumeState.Medium : VolumeState.High;
-                    break;
-                case "IsMuted":
+                if (_isMuted != value)
+                {
+                    _isMuted = value;
                     if (IsMuted)
                     {
                         oldVolume = Volume;
                         Volume = 0;
                     }
                     else Volume = oldVolume;
-                    break;
-                default:
-                    break;
+                }
+                RaisePropertyChanged();
             }
+        }
 
+        public VolumeState VolumeState { get => _volumeState; set { _volumeState = value; RaisePropertyChanged(); } }
+
+        public bool IsPlaying { get => waveOut.PlaybackState == PlaybackState.Playing; }
+
+        public bool IsStopped { get => waveOut.PlaybackState == PlaybackState.Stopped; }
+
+        public ObservableCollection<AudioFile> Files { get; set; }
+
+        private void SelectNextFile()
+        {
+            var index = Files.IndexOf(CurrentFile);
+            if (index < Files.Count - 1)
+            {
+                CurrentFile = Files[index + 1];
+            }
+            else
+            {
+                CurrentFile = Files.FirstOrDefault();
+            }
+        }
+
+        private void SelectPreviousFile()
+        {
+            var index = Files.IndexOf(CurrentFile);
+            if (index > 0)
+            {
+                CurrentFile = Files[index - 1];
+            }
+            else
+            {
+                CurrentFile = Files.LastOrDefault();
+            }
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (FileReader != null)
+            {
+                CurrentTime = FileReader.CurrentTime;
+                RaisePropertyChanged("CurrentTime");
+                _currentPosition = FileReader.Position;
+                RaisePropertyChanged("CurrentPosition");
+
+                if (FileReader.Position == FileReader.Length)
+                {
+                    FileReader = null;
+                    SelectNextFile();
+                   
+                }
+            }
         }
 
         public RelayCommand AddFilesCommand
@@ -175,24 +218,21 @@ namespace Player
                     switch (waveOut.PlaybackState)
                     {
                         case PlaybackState.Stopped:
-                            waveOut.Init(CurrentAudioFile = new AudioFileReader(CurrentFile.Patch));
+                            FileReader = new AudioFileReader(CurrentFile.Patch);
+                            waveOut.Init(FileReader);
                             waveOut.Play();
-                            IsPlaying = true;
-                            IsStopped = false;
                             break;
                         case PlaybackState.Playing:
                             waveOut.Pause();
-                            IsPlaying = false;
-                            IsStopped = false;
                             break;
                         case PlaybackState.Paused:
                             waveOut.Play();
-                            IsPlaying = true;
-                            IsStopped = false;
                             break;
                         default:
                             break;
                     }
+                    RaisePropertyChanged("IsPlaying");
+                    RaisePropertyChanged("IsStopped");
                 }
 
             });
@@ -207,55 +247,26 @@ namespace Player
                     case PlaybackState.Stopped:
                         CurrentFile = Files.FirstOrDefault();
                         waveOut.Play();
-                        IsPlaying = true;
-                        IsStopped = false;
+
                         break;
                     case PlaybackState.Playing:
                         waveOut.Stop();
-                        IsPlaying = false;
-                        IsStopped = true;
+
                         break;
                     case PlaybackState.Paused:
                         waveOut.Stop();
-                        IsStopped = true;
                         break;
                     default:
                         break;
                 }
+                RaisePropertyChanged("IsPlaying");
+                RaisePropertyChanged("IsStopped");
 
             });
         }
 
-        public RelayCommand NextFileCommand
-        {
-            get => new RelayCommand(() =>
-            {
-                var index = Files.IndexOf(CurrentFile);
-                if (index < Files.Count - 1)
-                {
-                    CurrentFile = Files[index + 1];
-                }
-                else
-                {
-                    CurrentFile = Files.FirstOrDefault();
-                }
-            });
-        }
-        public RelayCommand PreviousFileCommand
-        {
-            get => new RelayCommand(() =>
-            {
-                var index = Files.IndexOf(CurrentFile);
-                if (index > 0)
-                {
-                    CurrentFile = Files[index - 1];
-                }
-                else
-                {
-                    CurrentFile = Files.LastOrDefault();
-                }
-            });
-        }
+        public RelayCommand NextFileCommand => new RelayCommand(() => SelectNextFile());
+        public RelayCommand PreviousFileCommand => new RelayCommand(() => SelectPreviousFile());
 
         public RelayCommand MixFilesCommand
         {
@@ -268,20 +279,10 @@ namespace Player
                     Files.Move(0, new Random().Next(0, Files.Count - 1));
                     i++;
                 }
-
-
             });
         }
 
-        public RelayCommand MuteCommand
-        {
-
-            get => new RelayCommand(() =>
-            {
-                oldVolume = Volume;
-
-            });
-        }
+        public RelayCommand MuteCommand => new RelayCommand(() => oldVolume = Volume);
     }
 
     public enum VolumeState
@@ -313,6 +314,7 @@ namespace Player
             Artist = tag.AlbumArtists.FirstOrDefault();
             Album = tag.Album;
             Year = tag.Year;
+
             Duration = new AudioFileReader(patch).TotalTime;
             Picture = tag.Pictures.FirstOrDefault()?.Data.Data;
         }
