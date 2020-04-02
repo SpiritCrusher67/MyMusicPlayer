@@ -1,22 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Media;
 using NAudio.Wave;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using TagLib;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
-using System.IO;
-using System.Runtime.CompilerServices;
 using Microsoft.Win32;
-using System.Runtime.Remoting;
 using System.Timers;
-using System.Windows;
 
 namespace Player
 {
@@ -28,7 +20,7 @@ namespace Player
             waveOut = new WaveOutEvent();
 
             timer = new Timer();
-            timer.Interval = 300;
+            timer.Interval = 1000;
             timer.Elapsed += Timer_Elapsed;
             timer.Start();
         }
@@ -82,10 +74,10 @@ namespace Player
             get => _currentPosition;
             set
             {
-                if (FileReader != null)
+                if (CurrentFile != null)
                 {
                     _currentPosition = value;
-                    if (CurrentFile != default)
+                    if (FileReader != default)
                     {
                         FileReader.Position = value;
                     }
@@ -199,13 +191,17 @@ namespace Player
 
         public RelayCommand AddFilesCommand
         {
-            get => new RelayCommand(() =>
+            get => new RelayCommand(async () =>
             {
                 OpenFileDialog fileDialog = new OpenFileDialog();
                 fileDialog.Multiselect = true;
-
+                var list = new List<AudioFile>();
                 if (fileDialog.ShowDialog() == true)
-                    foreach (var item in fileDialog.FileNames) Files.Add(new AudioFile(item));
+                    await Task.Run(() => { foreach (var item in fileDialog.FileNames) list.Add(new AudioFile(item));});
+                foreach (var item in list)
+                {
+                    Files.Add(item);
+                }
             });
         }
 

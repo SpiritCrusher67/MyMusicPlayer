@@ -229,7 +229,7 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid Background="Black">
+    <Grid x:Name="MainGrid" Background="Black" MouseDown="Grid_MouseDown">
         <Grid Margin="5" Background="#44444444" Height="300" VerticalAlignment="Top">
             <Grid VerticalAlignment="Top" Margin="0">
                 <Button HorizontalAlignment="Left" Width="20" Height="20" Margin="5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top">
@@ -243,19 +243,23 @@
                         </materialDesign:PackIcon.Foreground>
                     </materialDesign:PackIcon>
                 </Button>
-                <StackPanel>
-                    <TextBlock Text="{Binding CurrentFile.Artist}" MaxWidth="170" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"  Foreground="LightSteelBlue"/>
-                    <TextBlock DataContext="{Binding CurrentFile}" MaxWidth="170" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Foreground="LightSteelBlue">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0} - {1} ">
-                                <Binding Path="Album" />
-                                <Binding Path="Title" />
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
+                
+                <TextBlock Text="{Binding CurrentFile.Artist}" MaxWidth="170" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Center"  Foreground="LightSteelBlue"/>
+
+                <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="30 5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" Click="Button_Click">
+                    <materialDesign:PackIcon Kind="WindowMinimize" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                <GradientStop Color="#FFD69016"/>
+                                <GradientStop Color="#FFD6511E" Offset="0.747"/>
+                                <GradientStop Color="#FF98330D" Offset="0.807"/>
+                            </LinearGradientBrush>
+                        </materialDesign:PackIcon.Foreground>
+                    </materialDesign:PackIcon>
+                </Button>
+
                 <Button HorizontalAlignment="Right" Width="20" Height="20" Margin="5" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" Click="ExitButton_Click">
-                    <materialDesign:PackIcon Kind="Power" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="WindowClose" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <materialDesign:PackIcon.Foreground>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                                 <GradientStop Color="#FFD69016"/>
@@ -266,6 +270,16 @@
                     </materialDesign:PackIcon>
                 </Button>
             </Grid>
+            
+            <TextBlock DataContext="{Binding CurrentFile}" MaxWidth="200" Margin="35" TextTrimming="CharacterEllipsis" VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="LightSteelBlue">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} - {1} ">
+                        <Binding Path="Album" />
+                        <Binding Path="Title" />
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+            
             <Ellipse Width="150" Height="150" StrokeThickness="1">
                 <Ellipse.Stroke>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -298,7 +312,7 @@
                         <Binding StringFormat="mm':'ss" Path="CurrentTime" Mode="OneWay"/>
                     </TextBlock.Text>
                 </TextBlock>
-                <Slider Orientation="Horizontal" Minimum="0" Maximum="{Binding FileReader.Length}" Value="{Binding  CurrentPosition,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Foreground="#FFD6511E" HorizontalAlignment="Center" Width="210"/>
+                <Slider Orientation="Horizontal" Minimum="0" Maximum="{Binding FileReader.Length}" Value="{Binding  CurrentPosition,Mode=TwoWay}" VerticalAlignment="Center" Foreground="#FFD6511E" HorizontalAlignment="Center" Width="210"/>
                 <TextBlock  VerticalAlignment="Center" Margin="5" Width="30" Foreground="LightSteelBlue">
                     <TextBlock.Text >
                         <Binding StringFormat="mm':'ss" Path="FileReader.TotalTime"/>
